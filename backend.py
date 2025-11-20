@@ -8,7 +8,7 @@ class Expense:
         self.category = category
         self.date = expense_date if expense_date else date.today().strftime("%Y-%m-%d")
 
-# Згідно Lab_03: Клас, відповідальний за взаємодію з базою даних [cite: 340]
+# Згідно Lab_03: Клас, відповідальний за взаємодію з базою даних 
 class StorageManager:
     def __init__(self, db_name="expenses.db"):
         self.conn = sqlite3.connect(db_name)
@@ -37,10 +37,10 @@ class StorageManager:
         cursor = self.conn.execute("SELECT * FROM expenses")
         return cursor.fetchall()
 
-# Згідно Lab_03: Клас, що інкапсулює бізнес-логіку [cite: 341]
+# Згідно Lab_03: Клас, що інкапсулює бізнес-логіку 
 class ExpenseCalculator:
     def calculate_total(self, expenses):
         total = 0
         for row in expenses:
-            total += row[1] # row[1] is amount
+            total += row[1] 
         return total
