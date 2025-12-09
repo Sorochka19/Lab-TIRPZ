@@ -37,6 +37,9 @@ class MainApplication(tk.Tk):
         try:
             amt = float(self.entry_amount.get())
             cat = self.entry_category.get()
+             if cat == "":
+            messagebox.showerror("Помилка", "Категорія не може бути порожньою")
+            return
             self.storage.add_expense(Expense(amt, cat))
             self.refresh_list()
         except:
