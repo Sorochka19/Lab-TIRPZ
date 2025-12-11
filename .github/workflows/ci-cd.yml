@@ -1,51 +1,60 @@
-name: Build, Info, and Release Workflow
+name: Python CI/CD Workflow
 
 on:
   push:
-    branches:
-      - '*' 
+    branches: [ main ]
 
-jobs:
-  build_and_release:
-    runs-on: ubuntu-latest
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
   
+jobs:
+  build_and_test:
+    name: Build, Test, and Release
+    runs-on: ubuntu-latest
+    
     steps:
       - name:  Checkout Repository
         uses: actions/checkout@v4
-        
+
       - name:  Display Committer Information
         run: |
           echo "Workflow Triggered By: ${{ github.event.pusher.name }}"
-          echo "Committer Email: ${{ github.event.pusher.email }}"
           echo "Commit Message: ${{ github.event.head_commit.message }}"
+          echo "Running on branch: ${{ github.ref }}"
           
-      - name:  Set up Node.py
+      - name:  Set up Python
         uses: actions/setup-python@v5
         with:
-          node-version: '20' # Вкажіть потрібну версію Node.js
+          python-version: ${{ env.PYTHON_VERSION }}
           
-      - name:  Install Dependencies
-        run: npm install
+      - name: Install Dependencies (наприклад, flake8 для лінтера)
+        run: |
+          python -m pip install --upgrade pip
+          # Якщо у вас є файл requirements.txt, використовуйте його
+          # pip install -r requirements.txt
+          pip install flake8
+          
+      - name: Lint with Flake8 (Перевірка якості коду)
 
-      - name:  Build Application
-        run: npm run build
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         
-      - name: 🏷️ Create Release on Main Branch
+      - name:  Create GitHub Release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-        
+       
           tag_name: v${{ format('{0}{1}{2}.{3}', github.event.repository.pushed_at[0], github.event.repository.pushed_at[1], github.event.repository.pushed_at[2], github.run_number) }}
-          name: Release ${{ github.event.head_commit.id }}
+          name: Automated Release (${{ github.run_number }})
           body: |
-            This is an automated release triggered by the last commit.
+            Release created automatically upon push to main branch.
             
             Author: ${{ github.event.pusher.name }}
             Commit: ${{ github.event.head_commit.message }}
+            
+            **Dependencies:** Python ${{ env.PYTHON_VERSION }}
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name:  Workflow Finished
-        run: echo "CI/CD process completed successfully."
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
