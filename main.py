@@ -33,18 +33,20 @@ class MainApplication(tk.Tk):
         self.lbl_total = tk.Label(self, text="Всього: 0")
         self.lbl_total.pack(pady=10)
 
-   def save_expense(self):
+def save_expense(self):
         try:
             amt = float(self.entry_amount.get())
             cat = self.entry_category.get()
+            
             if cat == "":
                 messagebox.showerror("Помилка", "Категорія не може бути порожньою")
                 return
-            
+
             self.storage.add_expense(Expense(amt, cat))
             self.refresh_list()
-        except ValueError: # Краще вказувати конкретну помилку
-            messagebox.showerror("Помилка", "Введіть коректне число")
+            
+        except ValueError:
+            messagebox.showerror("Помилка", "Введіть коректне число (наприклад: 100 або 50.5)")
     def refresh_list(self):
         for row in self.tree.get_children(): self.tree.delete(row)
         data = self.storage.get_all_expenses()
