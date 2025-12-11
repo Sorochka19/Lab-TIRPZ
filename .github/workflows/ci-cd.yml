@@ -1,0 +1,51 @@
+name: Build, Info, and Release Workflow
+
+on:
+  push:
+    branches:
+      - '*' 
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name:  Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name:  Display Committer Information
+        run: |
+          echo "Workflow Triggered By: ${{ github.event.pusher.name }}"
+          echo "Committer Email: ${{ github.event.pusher.email }}"
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          
+      - name:  Set up Node.py
+        uses: actions/setup-python@v5
+        with:
+          node-version: '20' # Вкажіть потрібну версію Node.js
+          
+      - name:  Install Dependencies
+        run: npm install
+
+      - name:  Build Application
+        run: npm run build
+        
+      - name: 🏷️ Create Release on Main Branch
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+        
+          tag_name: v${{ format('{0}{1}{2}.{3}', github.event.repository.pushed_at[0], github.event.repository.pushed_at[1], github.event.repository.pushed_at[2], github.run_number) }}
+          name: Release ${{ github.event.head_commit.id }}
+          body: |
+            This is an automated release triggered by the last commit.
+            
+            Author: ${{ github.event.pusher.name }}
+            Commit: ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name:  Workflow Finished
+        run: echo "CI/CD process completed successfully."
